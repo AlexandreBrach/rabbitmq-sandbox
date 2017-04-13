@@ -86,4 +86,39 @@ messageBus.prototype.sendMessage = function( message ) {
     }.bind( this ));
 }
 
+/**
+* Consume the message and send an unshift from the queue
+* 
+* @returns {Promise}
+*/
+messageBus.prototype.consumeMessage = function( callback )
+{
+    this.channel.consume( 
+        this.queue, 
+        callback,
+        {noAck:false}
+    );
+}
+
+/**
+* Message acknowledge
+* 
+* @param {object} message - Original message object to acknowledge 
+* @returns {void}
+*/
+messageBus.prototype.acknowledge = function( message )
+{
+    this.channel.ack( message );
+} 
+module.exports = messageBus;
+
+/**
+* recover unknownledged messages from the bus
+* 
+*/
+messageBus.prototype.recover = function(  )
+{
+    return this.channel.recover();
+}
+
 module.exports = messageBus;

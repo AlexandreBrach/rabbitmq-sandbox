@@ -5,6 +5,7 @@ var rabbit = {
 
 var messageBus = require( './message-bus' );
 var theBus = new messageBus( rabbit.url, rabbit.queueName );
+var dateformat = require( 'dateformat' );
 
 theBus.connect().then( function(msg) {
     console.log( 'bus returned : ' + msg );
@@ -17,6 +18,7 @@ theBus.connect().then( function(msg) {
 
 function main() {
     setInterval( function() {
-        theBus.sendMessage( 'Hello World !' );
-    }, 4000 );
+        var now = dateformat( new Date(), 'MM:ss' );
+        theBus.sendMessage( `Hello World ! (at ${now})` );
+    }, 500 );
 }

@@ -7,6 +7,50 @@ var messageBus = function( url, queueName ) {
 }
 
 /**
+* Queue creation
+* 
+* @returns {Promise}
+*/
+messageBus.prototype.createQueue = function(  )
+{
+    var self = this;
+    return new Promise( function( resolve, reject ) {
+        self.channel.assertQueue(
+            self.queue,
+            {durable: false}
+        ).then( function(_qok) {
+            resolve( 'queue created, ready to be used.');
+        } )
+        .catch( function( err ) {
+            reject( err );
+        });
+    } );
+}
+
+/**
+* Channel creation
+* 
+* @returns {Promise}
+*/
+messageBus.prototype.createChannel = function(  )
+{
+    var self = this;
+    return new Promise( function( resolve, reject ) {
+        self.connection.createChannel()
+            .then( function( channel ) {
+                console.log( 'channel creation' );
+                self.channel = channel;
+                self.createQueue()
+                    .then( function() {
+                        resolve( 'connected' );
+                    } )
+                    .catch( function( err ) { reject( err ); } );
+            } )
+            .catch( function( err ) { reject( err ); } );
+    } );
+}
+
+/**
 * Connection to the message bus
 * 
 * @returns {Promise}
@@ -19,15 +63,12 @@ messageBus.prototype.connect = function()
     var p = new Promise(function( resolve, reject) {
         amqp.connect( url )
             .then( function( connection ) {
-                connection.createChannel()
-                    .then( function( channel ) {
-                        this.channel = channel;
-                        resolve( 'connected' );
-                    }.bind( self ) )
-                    .catch( function( err ) {
-                        reject( err );
-                    } );
-            } )
+                console.log( 'connected to : ' + self.url );
+                self.connection = connection;
+                self.createChannel()
+                    .then( function() { resolve( 'channel + queue "' + self.queue + '" successfully created.')})
+                    .catch( reject );
+            }.bind( self ) )
             .catch( function( err ) {
                 reject( err );
             } );
@@ -37,7 +78,7 @@ messageBus.prototype.connect = function()
 };
 
 messageBus.prototype.sendMessage = function( message ) {
-    this.channel.assertQueue(
+    this.channel.checkQueue(
         this.queue,
         {durable: false}
     ).then( function(_qok) {
@@ -50,15 +91,13 @@ messageBus.prototype.sendMessage = function( message ) {
 * 
 * @returns {Promise}
 */
-messageBus.prototype.consumeMessage = function()
+messageBus.prototype.consumeMessage = function( callback )
 {
-    return new Promise( function( resolve, reject ) {
-        this.channel.consume( this.queue, function( msg ) {
-            resolve( msg );
-        },
-            {noAck:false}
-        );
-    }.bind( this ));
+    this.channel.consume( 
+        this.queue, 
+        callback,
+        {noAck:false}
+    );
 }
 
 /**
@@ -71,4 +110,15 @@ messageBus.prototype.acknowledge = function( message )
 {
     this.channel.ack( message );
 } 
+module.exports = messageBus;
+
+/**
+* recover unknownledged messages from the bus
+* 
+*/
+messageBus.prototype.recover = function(  )
+{
+    return this.channel.recover();
+}
+
 module.exports = messageBus;
