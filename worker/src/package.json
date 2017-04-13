@@ -1,0 +1,18 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "forever --minUptime 1 -c 'nodemon --exitcrash' app/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.5.1",
+    "forever": "^0.15.3",
+    "hapi": "^16.1.0",
+    "nodemon": "^1.11.0"
+  }
+}

@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+    
+    message-bus:
+        image: library/rabbitmq:3.6-management
+        restart: always
+        environment:
+            - RABBITMQ_DEFAULT_USER=rabbit
+            - RABBITMQ_DEFAULT_PASS=rabbit
+        ports:
+            - 15672:15672
+
+    application:
+        links:
+            - message-bus
+        build: ./application
+        volumes:
+            - ./application/src/app:/src/app
+
+    worker:
+        links:
+            - message-bus
+        build: ./worker
+        volumes:
+            - ./worker/src/app:/src/app
