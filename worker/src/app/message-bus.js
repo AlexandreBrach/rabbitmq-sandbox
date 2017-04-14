@@ -70,7 +70,14 @@ messageBus.prototype.connect = function()
                     .catch( reject );
             }.bind( self ) )
             .catch( function( err ) {
-                reject( err );
+                console.log( 'Unable to connect !' );
+                console.log( err );
+                console.log( 'Retry in 3 seconds' );
+                setTimeout( function() {
+                    self.connect()
+                        .then( resolve )
+                        .catch( reject );
+                }, 3000 );
             } );
     });
 

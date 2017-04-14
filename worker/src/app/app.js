@@ -5,6 +5,7 @@ var rabbit = {
 
 var messageBus = require( './message-bus' );
 var bus = new messageBus( rabbit.url, rabbit.queueName );
+
 var syncWorker = require( './message-bus-syncWorker' );
 var worker = new syncWorker();
         
@@ -16,6 +17,6 @@ worker.connect( bus, function( msg ) {
             console.log( 'Acknowledge following tag : ' + msg.fields.deliveryTag );
             resolve( 'ok' );
         }
-        ,10 );
+        ,1000 );
     });
 } );
