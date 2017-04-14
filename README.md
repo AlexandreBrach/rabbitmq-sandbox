@@ -7,6 +7,7 @@ The file `docker-compose` help to instanciate :
 * a `NodeJS` worker that unshift a message every seconds
 
 There's no need to provide .env, just have the tcp port 15672 available on your host.
+(You can execute `launch-dev.sh` to chain docker-compose build, down and up.)
     
 Once the services instanciated, you can see the messages stack growing in the `rabbitMQ` web admin at http://localhost:15672
 
