@@ -1,24 +1,22 @@
-var rabbit = {
-    url : "amqp://rabbit:rabbit@message-bus",
-    queueName : 'the.bus'
-}
+var config = require( './config');
+var rabbit = config.rabbit;
 
-var messageBus = require( './message-bus' );
-var bus = new messageBus( rabbit.url, rabbit.queueName );
+var eventDispatcher = require( './event-dispatcher' );
+var dispatcher = new eventDispatcher( rabbit.url, rabbit.queueName );
 var dateformat = require( 'dateformat' );
 
-bus.connect().then( function(msg) {
-    console.log( 'bus returned : ' + msg );
+dispatcher.connect().then( function(msg) {
+    console.log( 'dispatcher returned : ' + msg );
     main();
 } )
 .catch( function( err ) {
-    console.log( 'bus creation failed !' );
+    console.log( 'dispatcher creation failed !' );
     console.error( err );
 } );
 
 function main() {
     setInterval( function() {
         var now = dateformat( new Date(), 'MM:ss' );
-        bus.sendMessage( `Hello World ! (at ${now})` );
+        dispatcher.sendMessage( rabbit.routingKey, `Hello World ! (at ${now})` );
     }, 100 );
 }

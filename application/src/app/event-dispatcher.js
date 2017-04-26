@@ -1,25 +1,27 @@
 
 var amqp = require('amqplib');
 
-var messageBus = function( url, queueName ) {
+var eventDispatcher = function( url, queueName ) {
     this.url = url;
-    this.queue = queueName;
+    this.exchange = queueName;
 }
 
 /**
-* Queue creation
+* Exchange creation
 * 
+* @param {string} name - the name of the exchange
 * @returns {Promise}
 */
-messageBus.prototype.createQueue = function(  )
+eventDispatcher.prototype.createExchange = function( name )
 {
     var self = this;
     return new Promise( function( resolve, reject ) {
-        self.channel.assertQueue(
-            self.queue,
+        self.channel.assertExchange(
+            name,
+            'topic',
             {durable: false}
         ).then( function(_qok) {
-            resolve( 'queue created, ready to be used.');
+            resolve( 'exchange created, ready to be used.');
         } )
         .catch( function( err ) {
             reject( err );
@@ -32,7 +34,7 @@ messageBus.prototype.createQueue = function(  )
 * 
 * @returns {Promise}
 */
-messageBus.prototype.createChannel = function(  )
+eventDispatcher.prototype.createChannel = function( channelName )
 {
     var self = this;
     return new Promise( function( resolve, reject ) {
@@ -40,7 +42,7 @@ messageBus.prototype.createChannel = function(  )
             .then( function( channel ) {
                 console.log( 'channel creation' );
                 self.channel = channel;
-                self.createQueue()
+                self.createExchange( channelName )
                     .then( function() {
                         resolve( 'connected' );
                     } )
@@ -55,7 +57,7 @@ messageBus.prototype.createChannel = function(  )
 * 
 * @returns {Promise}
 */
-messageBus.prototype.connect = function()
+eventDispatcher.prototype.connect = function()
 {
     var url = this.url;
     var self = this;
@@ -65,8 +67,8 @@ messageBus.prototype.connect = function()
             .then( function( connection ) {
                 console.log( 'connected to : ' + self.url );
                 self.connection = connection;
-                self.createChannel()
-                    .then( function() { resolve( 'channel + queue "' + self.queue + '" successfully created.')})
+                self.createChannel( this.exchange )
+                    .then( function() { resolve( 'channel + exchange "' + self.exchange + '" successfully created.')})
                     .catch( reject );
             }.bind( self ) )
             .catch( function( err ) {
@@ -84,48 +86,8 @@ messageBus.prototype.connect = function()
     return p;
 };
 
-messageBus.prototype.sendMessage = function( message ) {
-    this.channel.checkQueue(
-        this.queue,
-        {durable: false}
-    ).then( function(_qok) {
-        this.channel.sendToQueue( this.queue, new Buffer( message ) );
-    }.bind( this ));
+eventDispatcher.prototype.sendMessage = function( routingKey, message ) {
+    this.channel.publish( this.exchange, routingKey, new Buffer( message ) );
 }
 
-/**
-* Consume the message and send an unshift from the queue
-* 
-* @returns {Promise}
-*/
-messageBus.prototype.consumeMessage = function( callback )
-{
-    this.channel.consume( 
-        this.queue, 
-        callback,
-        {noAck:false}
-    );
-}
-
-/**
-* Message acknowledge
-* 
-* @param {object} message - Original message object to acknowledge 
-* @returns {void}
-*/
-messageBus.prototype.acknowledge = function( message )
-{
-    this.channel.ack( message );
-} 
-module.exports = messageBus;
-
-/**
-* recover unknownledged messages from the bus
-* 
-*/
-messageBus.prototype.recover = function(  )
-{
-    return this.channel.recover();
-}
-
-module.exports = messageBus;
+module.exports = eventDispatcher;

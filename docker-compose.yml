@@ -11,16 +11,49 @@ services:
         ports:
             - 15672:15672
 
-    application:
+    dispatcher-a:
         links:
             - message-bus
         build: ./application
+        environment:
+            - EXCHANGE_NAME=channelA
+            - ROUTING_KEY=defaultRoute
         volumes:
             - ./application/src/app:/src/app
 
-    worker:
+    dispatcher-b:
+        links:
+            - message-bus
+        build: ./application
+        environment:
+            - EXCHANGE_NAME=channelB
+            - ROUTING_KEY=defaultRoute
+        volumes:
+            - ./application/src/app:/src/app
+
+    worker-a:
         links:
             - message-bus
         build: ./worker
+        environment:
+            - QUEUE_NAME=workingPipeA
+        volumes:
+            - ./worker/src/app:/src/app
+
+    worker-b:
+        links:
+            - message-bus
+        build: ./worker
+        environment:
+            - QUEUE_NAME=workingPipeB
+        volumes:
+            - ./worker/src/app:/src/app
+
+    worker-c:
+        links:
+            - message-bus
+        build: ./worker
+        environment:
+            - QUEUE_NAME=workingPipeC
         volumes:
             - ./worker/src/app:/src/app

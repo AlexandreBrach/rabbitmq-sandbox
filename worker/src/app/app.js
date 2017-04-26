@@ -1,15 +1,10 @@
-var rabbit = {
-    url : "amqp://rabbit:rabbit@message-bus",
-    queueName : 'the.bus'
-}
 
-var messageBus = require( './message-bus' );
-var bus = new messageBus( rabbit.url, rabbit.queueName );
+var config = require( './config');
+var rabbit = config.rabbit;
 
 var syncWorker = require( './message-bus-syncWorker' );
-var worker = new syncWorker();
         
-worker.connect( bus, function( msg ) {
+function work( msg ) {
     var body = msg.content.toString();
     return new Promise( function( resolve, reject ) {
         setTimeout( function() {
@@ -18,5 +13,14 @@ worker.connect( bus, function( msg ) {
             resolve( 'ok' );
         }
         ,1000 );
-    });
-} );
+    } );
+}
+
+var worker = new syncWorker( rabbit.url, rabbit.queueName );
+worker.connect()
+    .then( function() {
+        worker.work( work );
+    } )
+    .catch( function( err ) {
+        console.log( err );
+    } );
