@@ -4,8 +4,7 @@
 var config = {
     rabbit: {
         url : 'amqp://rabbit:rabbit@message-bus',
-        queueName : process.env.EXCHANGE_NAME,
-        routingKey : process.env.ROUTING_KEY 
+        exchange : process.env.EXCHANGE_NAME
     }
 };
 

@@ -2,24 +2,21 @@
 var config = require( './config');
 var rabbit = config.rabbit;
 
-var syncWorker = require( './message-bus-syncWorker' );
+var EventCatcher = require( '../library/event-catcher' );
         
-function work( msg ) {
+function event( msg ) {
     var body = msg.content.toString();
     return new Promise( function( resolve, reject ) {
-        setTimeout( function() {
             console.log( 'Process this message : ' + body );
             console.log( 'Acknowledge following tag : ' + msg.fields.deliveryTag );
             resolve( 'ok' );
-        }
-        ,1000 );
     } );
 }
 
-var worker = new syncWorker( rabbit.url, rabbit.queueName );
+var worker = new EventCatcher( rabbit.url, rabbit.exchange );
 worker.connect()
     .then( function() {
-        worker.work( work );
+        worker.catch( event );
     } )
     .catch( function( err ) {
         console.log( err );

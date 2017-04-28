@@ -11,49 +11,31 @@ services:
         ports:
             - 15672:15672
 
-    dispatcher-a:
+    broadcast:
+        build: ./broadcast
         links:
             - message-bus
-        build: ./application
         environment:
-            - EXCHANGE_NAME=channelA
-            - ROUTING_KEY=defaultRoute
+            - EXCHANGE_NAME=broadcast
         volumes:
-            - ./application/src/app:/src/app
+            - ./broadcast/src/app:/src/app
+            - ./nodejs-library:/src/library/
 
-    dispatcher-b:
-        links:
-            - message-bus
-        build: ./application
-        environment:
-            - EXCHANGE_NAME=channelB
-            - ROUTING_KEY=defaultRoute
-        volumes:
-            - ./application/src/app:/src/app
-
-    worker-a:
-        links:
-            - message-bus
+    worker:
         build: ./worker
+        links:
+            - message-bus
         environment:
-            - QUEUE_NAME=workingPipeA
+            - EXCHANGE_NAME=broadcast
         volumes:
             - ./worker/src/app:/src/app
+            - ./nodejs-library:/src/library/
 
-    worker-b:
+    worker-python:
+        build: ./worker-python
         links:
             - message-bus
-        build: ./worker
         environment:
-            - QUEUE_NAME=workingPipeB
+            - EXCHANGE_NAME=broadcast
         volumes:
-            - ./worker/src/app:/src/app
-
-    worker-c:
-        links:
-            - message-bus
-        build: ./worker
-        environment:
-            - QUEUE_NAME=workingPipeC
-        volumes:
-            - ./worker/src/app:/src/app
+            - ./worker-python/src:/src
