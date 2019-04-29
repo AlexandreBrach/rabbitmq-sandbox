@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitsandbox-broadcast
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitsandbox
+      tier: broadcast
+  template:
+    metadata:
+      labels:
+        app: rabbitsandbox
+        tier: broadcast
+    spec:
+      containers:
+      - name: broadcast
+        image: 693113135034.dkr.ecr.eu-west-3.amazonaws.com/sandbox/broadcast:0.1
+        env:
+        - name: EXCHANGE_NAME
+          value: broadcast

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitsandbox-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitsandbox
+      tier: worker
+  template:
+    metadata:
+      labels:
+        app: rabbitsandbox
+        tier: worker
+    spec:
+      containers:
+      - name: worker
+        image: 693113135034.dkr.ecr.eu-west-3.amazonaws.com/sandbox/worker:0.1
+        env:
+        - name: EXCHANGE_NAME
+          value: broadcast
