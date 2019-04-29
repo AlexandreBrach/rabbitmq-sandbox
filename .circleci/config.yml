@@ -19,8 +19,8 @@ workflows:
           path: "broadcast"
           #profile-name: myProfileName
           region: AWS_DEFAULT_REGION
-          repo: "${AWS_RESOURCE_NAME_PREFIX}"
-          tag: "${CIRCLE_SHA1}"
+          repo: "${AWS_RESOURCE_NAME_PREFIX}/broadcast"
+          tag: "0.1"
       - aws-ecr/build_and_push_image:
           account-url: AWS_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY_ID
@@ -31,6 +31,6 @@ workflows:
           path: "worker"
           #profile-name: myProfileName
           region: AWS_DEFAULT_REGION
-          repo: "${AWS_RESOURCE_NAME_PREFIX}"
-          tag: "${CIRCLE_SHA1}"
+          repo: "${AWS_RESOURCE_NAME_PREFIX}/worker"
+          tag: "0.1"
 
